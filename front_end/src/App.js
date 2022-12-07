@@ -10,35 +10,52 @@ function App() {
   const [problem, setProblem] = useState("");
   const [type, setType] = useState("");
 
-  const fetchTickets = async() => {
-    try {      
+  const fetchTickets = async () => {
+    try {
       const response = await axios.get("/api/tickets");
       setTickets(response.data.tickets);
-    } catch(error) {
+    }
+    catch (error) {
       setError("error retrieving words: " + error);
     }
   }
-  const createTicket = async() => {
+  const createTicket = async () => {
     try {
-      await axios.post("/api/tickets", {name: name, problem: problem, type: type});
-    } catch(error) {
+      await axios.post("/api/tickets", { name: name, problem: problem, type: type });
+    }
+    catch (error) {
       setError("error adding a word: " + error);
     }
   }
-  const deleteOneTicket = async(ticket) => {
+  const deleteOneTicket = async (ticket) => {
     try {
       await axios.delete("/api/tickets/" + ticket.id);
-    } catch(error) {
+    }
+    catch (error) {
       setError("error deleting a word" + error);
+    }
+  }
+  const deleteAllTickets = async() =>{
+    try {
+      
+      for(let i = 0; i < tickets.length; i++){
+        console.log(tickets.at(i).id);
+        const ticket = tickets.at(i);
+        await deleteOneTicket(ticket);
+      }
+     
+    }
+    catch (error) {
+      setError("error deleting all" + error);
     }
   }
 
   // fetch ticket data
   useEffect(() => {
     fetchTickets();
-  },[]);
+  }, []);
 
-  const addTicket = async(e) => {
+  const addTicket = async (e) => {
     e.preventDefault();
     await createTicket();
     fetchTickets();
@@ -47,10 +64,15 @@ function App() {
     setType("");
   }
 
-  const deleteTicket = async(ticket) => {
+  const deleteTicket = async (ticket) => {
     await deleteOneTicket(ticket);
     fetchTickets();
   }
+  const sendToSanta = async (ticket) => {
+    await deleteAllTickets();
+    fetchTickets();
+  }
+  
 
   // render results
   return (
@@ -66,13 +88,15 @@ function App() {
         </div>
         <div>
           <label>
-            Definition:&nbsp;
-            <textarea value={problem} onChange={e=>setProblem(e.target.value)}></textarea>
+          Description:&nbsp;
+            <textarea  value={problem} onChange={e=>setProblem(e.target.value)}></textarea>
           </label>
         </div>
-        <input class="in" type="submit" value="Add to list" />
+        <input  className = "finish" type="submit" value="Add to list" />
       </form>
+      
       <h2>Wishlist</h2>
+      
       <div class="flex-container">
         {tickets.map( ticket => (
           <div key={ticket.id} className="ticket">
@@ -80,10 +104,11 @@ function App() {
               <p><strong>{ticket.name}</strong></p>
               <p>{ticket.problem}</p>
             </div>
-            <button onClick={e => deleteTicket(ticket)}>Remove this word</button>
+            <button onClick={e => deleteTicket(ticket)}>Remove this item</button>
           </div>
         ))}
       </div>
+      <button className = "finish" onClick={e => sendToSanta()}>Send list to Santa</button>
       <div id="space"></div>
     </div>
   );
